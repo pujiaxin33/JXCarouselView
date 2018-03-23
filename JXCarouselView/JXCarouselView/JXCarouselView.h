@@ -12,6 +12,7 @@
 
 @property (nonatomic, strong) NSArray <NSString *>*imageURLArray;
 @property (nonatomic, strong) NSArray <UIImage *> *images;
+@property (nonatomic, assign) CGPoint pageControlCenter;    //默认距离父视图下方20pt
 
 //- (instancetype)initWithImageURLArray:(NSArray <NSString *>*)imageURLArray;
 

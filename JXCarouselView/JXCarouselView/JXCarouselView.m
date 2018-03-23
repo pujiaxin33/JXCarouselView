@@ -7,6 +7,9 @@
 //
 
 #import "JXCarouselView.h"
+#import <SDWebImage/UIImageView+WebCache.h>
+
+static const CGFloat pageControlBottom = 20.0;
 
 @interface JXCarouselView () <UIScrollViewDelegate>
 
@@ -14,9 +17,10 @@
 @property (nonatomic, strong) UIPageControl *pageControl;
 @property (nonatomic, assign) CGFloat pageControlHeight;
 @property (nonatomic, strong) UIImageView *leftImageView;
-@property (nonatomic, strong) UIImageView *centerImageView;
 @property (nonatomic, strong) UIImageView *rightImageView;
 @property (nonatomic, assign) NSInteger currentIndex;
+@property (nonatomic, assign) CGFloat startContentOffsetX;  //用于判断什么情况下刷新currentIndex
+
 @end
 
 @implementation JXCarouselView
@@ -43,22 +47,23 @@
 - (void)initializeDatas {
     _pageControlHeight = 20.0;
     _currentIndex = 0;
+    _startContentOffsetX = 0;
+    _pageControlCenter = CGPointZero;
 }
 
 - (void)initializeViews {
     _scrollView = [[UIScrollView alloc] init];
     _scrollView.pagingEnabled = YES;
     _scrollView.delegate = self;
-//    _scrollView.bounces = NO;
+    _scrollView.bounces = YES;
+    _scrollView.alwaysBounceHorizontal = YES;
+    _scrollView.showsVerticalScrollIndicator = NO;
+    _scrollView.showsHorizontalScrollIndicator = NO;
     [self addSubview:_scrollView];
 
     _leftImageView = [[UIImageView alloc] init];
     _leftImageView.contentMode = UIViewContentModeScaleAspectFill;
     [_scrollView addSubview:_leftImageView];
-
-    _centerImageView = [[UIImageView alloc] init];
-    _centerImageView.contentMode = UIViewContentModeScaleAspectFill;
-    [_scrollView addSubview:_centerImageView];
 
     _rightImageView = [[UIImageView alloc] init];
     _rightImageView.contentMode = UIViewContentModeScaleAspectFill;
@@ -66,6 +71,7 @@
 
     _pageControl = [[UIPageControl alloc] init];
     _pageControl.currentPageIndicatorTintColor = [UIColor redColor];
+    _pageControl.hidesForSinglePage = YES;
     [self addSubview:_pageControl];
 }
 
@@ -74,89 +80,110 @@
 
     CGSize size = self.bounds.size;
     _scrollView.frame = self.bounds;
-    _scrollView.contentSize = CGSizeMake(self.bounds.size.width*MIN(3, self.images.count), self.bounds.size.height);
-    _scrollView.contentOffset = CGPointMake(self.images.count<=1?0:size.width, 0);
-    _pageControl.frame = CGRectMake(10, size.height - self.pageControlHeight*2, 100, self.pageControlHeight);
+    _scrollView.contentSize = CGSizeMake(self.bounds.size.width*MIN(2, self.imageURLArray.count), self.bounds.size.height);
+    _scrollView.contentOffset = CGPointMake(0, 0);
+
     _leftImageView.frame = CGRectMake(0, 0, size.width, size.height);
-    _centerImageView.frame = CGRectMake(size.width, 0, size.width, size.height);
-    _rightImageView.frame = CGRectMake(size.width*2, 0, size.width, size.height);
+    _rightImageView.frame = CGRectMake(size.width, 0, size.width, size.height);
+    [self configImageView:_leftImageView imageIndex:self.currentIndex];
+    [self configImageView:_rightImageView imageIndex:self.currentIndex + 1];
+
+    if (self.imageURLArray.count == 0) {
+        _leftImageView.hidden = YES;
+        _rightImageView.hidden = YES;
+    }else if (self.imageURLArray.count == 1) {
+        _rightImageView.hidden = YES;
+    }
+
+    _pageControl.numberOfPages = self.imageURLArray.count;
+    _pageControl.currentPage = self.currentIndex;
+    if (CGPointEqualToPoint(_pageControlCenter, CGPointZero)) {
+        _pageControlCenter = CGPointMake(self.center.x, self.bounds.size.height - pageControlBottom - _pageControlHeight/2.0);
+    }
+    CGSize pageSize = [_pageControl sizeForNumberOfPages:self.imageURLArray.count];
+    _pageControl.bounds = CGRectMake(0, 0, pageSize.width, _pageControlHeight);
+    _pageControl.center = _pageControlCenter;
 }
 
 - (void)setImageURLArray:(NSArray<NSString *> *)imageURLArray
 {
     _imageURLArray = imageURLArray;
 
-    _pageControl.numberOfPages = imageURLArray.count;
-    _pageControl.currentPage = 0;
+    _currentIndex = 0;
+    [self setNeedsLayout];
 }
 
-- (void)setImages:(NSArray<UIImage *> *)images
-{
-    _images = images;
-
-    [self reloadImages];
-}
-
-- (UIImage *)getImageWithTargetIndex:(NSInteger)targetIndex {
-    targetIndex = [self getCorrectIndex:targetIndex];
-    return self.images[targetIndex];
+- (void)configImageView:(UIImageView *)imageView imageIndex:(NSInteger)index {
+    if (self.imageURLArray.count == 0) {
+        return;
+    }
+    index = [self getCorrectIndex:index];
+    NSString *imageURL = self.imageURLArray[index];
+    [imageView sd_setImageWithURL:[NSURL URLWithString:imageURL] placeholderImage:nil options:SDWebImageRetryFailed];
 }
 
 - (NSInteger)getCorrectIndex:(NSInteger)index {
     if (index < 0) {
-        index = self.images.count - 1;
-    }else if (index > self.images.count - 1) {
+        index = self.imageURLArray.count - 1;
+    }else if (index > self.imageURLArray.count - 1) {
         index = 0;
     }
     return index;
 }
 
-- (void)reloadImages {
-    _pageControl.numberOfPages = self.images.count;
-    _pageControl.currentPage = self.currentIndex;
-
-    _leftImageView.image = [self getImageWithTargetIndex:self.currentIndex - 1];
-    _centerImageView.image = [self getImageWithTargetIndex:self.currentIndex];
-    _rightImageView.image = [self getImageWithTargetIndex:self.currentIndex + 1];
-}
-
-
 #pragma mark - UIScrollViewDelegate
 
-- (void)scrollViewWillBeginDragging:(UIScrollView *)scrollView {
-    NSLog(@"%@:%@", NSStringFromSelector(_cmd), [NSValue valueWithCGPoint:scrollView.contentOffset]);
-}
-
 - (void)scrollViewDidScroll:(UIScrollView *)scrollView {
-    NSLog(@"%@:%@,currentIndex:%ld", NSStringFromSelector(_cmd), [NSValue valueWithCGPoint:scrollView.contentOffset], self.currentIndex);
+    if (self.imageURLArray.count <= 1) {
+        return;
+    }
     CGFloat contentOffsetX = scrollView.contentOffset.x;
-    BOOL isNeedReload = NO;
-    if (contentOffsetX <= 0) {
-        //向左滑
-        self.currentIndex = [self getCorrectIndex:self.currentIndex - 1];
-        isNeedReload = YES;
-    }else if (contentOffsetX >= scrollView.bounds.size.width*MIN(2, self.images.count - 1)) {
+    if (contentOffsetX < 0) {
+        if (_startContentOffsetX == scrollView.bounds.size.width) {
+            _startContentOffsetX = 0;
+            self.currentIndex = [self getCorrectIndex:self.currentIndex - 1];
+            _pageControl.currentPage = self.currentIndex;
+        }
+    }else if (contentOffsetX > scrollView.bounds.size.width) {
+        if (_startContentOffsetX == 0) {
+            _startContentOffsetX = scrollView.bounds.size.width;
+            self.currentIndex = [self getCorrectIndex:self.currentIndex + 1];
+            _pageControl.currentPage = self.currentIndex;
+        }
+    }
+    if (contentOffsetX < 0) {
         //向右滑
-        self.currentIndex = [self getCorrectIndex:self.currentIndex + 1];
-        isNeedReload = YES;
-    }
-    if (isNeedReload) {
-        self.pageControl.currentPage = self.currentIndex;
-        [self reloadImages];
+        _startContentOffsetX = scrollView.bounds.size.width;
+        [self configImageView:_leftImageView imageIndex:self.currentIndex - 1];
+        [self configImageView:_rightImageView imageIndex:self.currentIndex];
         [scrollView setContentOffset:CGPointMake(scrollView.bounds.size.width, 0)];
+    }else if (contentOffsetX > scrollView.bounds.size.width) {
+        //向左滑
+        _startContentOffsetX = 0;
+        [self configImageView:_leftImageView imageIndex:self.currentIndex];
+        [self configImageView:_rightImageView imageIndex:self.currentIndex + 1];
+        [scrollView setContentOffset:CGPointMake(0, 0)];
     }
-
-}
-
-- (void)scrollViewWillEndDragging:(UIScrollView *)scrollView withVelocity:(CGPoint)velocity targetContentOffset:(inout CGPoint *)targetContentOffset {
-    NSLog(@"%@:%@", NSStringFromSelector(_cmd), [NSValue valueWithCGPoint:scrollView.contentOffset]);
-}
-
-- (void)scrollViewDidEndDragging:(UIScrollView *)scrollView willDecelerate:(BOOL)decelerate {
 }
 
 - (void)scrollViewDidEndDecelerating:(UIScrollView *)scrollView {
-    NSLog(@"%@:%@", NSStringFromSelector(_cmd), [NSValue valueWithCGPoint:scrollView.contentOffset]);
+    if (self.imageURLArray.count <= 1) {
+        return;
+    }
+    CGFloat contentOffsetX = scrollView.contentOffset.x;
+    if (contentOffsetX == 0) {
+        if (_startContentOffsetX == scrollView.bounds.size.width) {
+            _startContentOffsetX = 0;
+            self.currentIndex = [self getCorrectIndex:self.currentIndex - 1];
+            _pageControl.currentPage = self.currentIndex;
+        }
+    }else if (contentOffsetX == scrollView.bounds.size.width) {
+        if (_startContentOffsetX == 0) {
+            _startContentOffsetX = scrollView.bounds.size.width;
+            self.currentIndex = [self getCorrectIndex:self.currentIndex + 1];
+            _pageControl.currentPage = self.currentIndex;
+        }
+    }
 }
 
 @end
