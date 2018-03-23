@@ -13,6 +13,7 @@
 		190A553F20649B120050B327 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 190A553E20649B120050B327 /* Assets.xcassets */; };
 		190A554220649B120050B327 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 190A554020649B120050B327 /* LaunchScreen.storyboard */; };
 		190A554520649B120050B327 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 190A554420649B120050B327 /* main.m */; };
+		190A554E20649B690050B327 /* JXCarouselView.m in Sources */ = {isa = PBXBuildFile; fileRef = 190A554D20649B690050B327 /* JXCarouselView.m */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -26,6 +27,8 @@
 		190A554120649B120050B327 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		190A554320649B120050B327 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		190A554420649B120050B327 /* main.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = main.m; sourceTree = "<group>"; };
+		190A554C20649B690050B327 /* JXCarouselView.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = JXCarouselView.h; sourceTree = "<group>"; };
+		190A554D20649B690050B327 /* JXCarouselView.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = JXCarouselView.m; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -58,6 +61,7 @@
 		190A553420649B120050B327 /* JXCarouselView */ = {
 			isa = PBXGroup;
 			children = (
+				190A554B20649B530050B327 /* JXCarouselView */,
 				190A553520649B120050B327 /* AppDelegate.h */,
 				190A553620649B120050B327 /* AppDelegate.m */,
 				190A553820649B120050B327 /* ViewController.h */,
@@ -67,6 +71,15 @@
 				190A554020649B120050B327 /* LaunchScreen.storyboard */,
 				190A554320649B120050B327 /* Info.plist */,
 				190A554420649B120050B327 /* main.m */,
+			);
+			path = JXCarouselView;
+			sourceTree = "<group>";
+		};
+		190A554B20649B530050B327 /* JXCarouselView */ = {
+			isa = PBXGroup;
+			children = (
+				190A554C20649B690050B327 /* JXCarouselView.h */,
+				190A554D20649B690050B327 /* JXCarouselView.m */,
 			);
 			path = JXCarouselView;
 			sourceTree = "<group>";
@@ -144,6 +157,7 @@
 			files = (
 				190A553A20649B120050B327 /* ViewController.m in Sources */,
 				190A554520649B120050B327 /* main.m in Sources */,
+				190A554E20649B690050B327 /* JXCarouselView.m in Sources */,
 				190A553720649B120050B327 /* AppDelegate.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -279,7 +293,9 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = CUHY5967Q2;
 				INFOPLIST_FILE = JXCarouselView/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 10.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = jiaxin.JXCarouselView;
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -292,7 +308,9 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = CUHY5967Q2;
 				INFOPLIST_FILE = JXCarouselView/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 10.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = jiaxin.JXCarouselView;
 				PRODUCT_NAME = "$(TARGET_NAME)";
